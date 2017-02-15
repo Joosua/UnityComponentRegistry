@@ -15,7 +15,7 @@
 
 ###To get access to given coponent types###
 
-`List<Component> component = this.GetObjectsOfType<Unit>()`
+`List<Component> components = this.GetObjectsOfType<Unit>()`
 
 ###For sorting use following extension methods:###
 
@@ -45,6 +45,9 @@ Range:
 
 Inverse: 
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
+
+###It's also possible to link them together###
+`List<Component> components = this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f)).RaycastInverse(go, layer, 30f).Random(2);`
 
 Note!
 This code is very immature and experimental.
