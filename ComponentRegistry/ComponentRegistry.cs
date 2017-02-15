@@ -5,6 +5,7 @@ using System.Linq; // @TODO remove!!!
 
 public static class ComponentRegistry
 {
+    #region STATIC MAPPING
     /// <summary>
     /// Temporary list used for component sorting purposes
     /// </summary>
@@ -27,7 +28,7 @@ public static class ComponentRegistry
     /// Get components of given generic type. If list reference is not passed, new component list is instantiated.
     /// </summary>
     /// <typeparam name="T">Component type</typeparam>
-    /// <param name="comp">Target component</param>
+    /// <param name="comp"></param>
     /// <param name="list">Reference list to store components. Can be null.</param>
     /// <returns></returns>
     public static List<Component> GetObjectsOfType<T>(this Component comp, List<Component> list = null) where T : Component
@@ -77,12 +78,12 @@ public static class ComponentRegistry
         List<Component> comps = typeToComponentMap[comp.GetType()];
         comps.Remove(comp);
     }
-
+    #endregion
     #region COMPONENT LIST EXTENSIONS
 
     /// <summary>
     /// To check if there is no obsticles between the component object and target game object.
-    /// Remove any component that dont have direct vision to target game object or the distance is too great.
+    /// Remove any components from the list, that don't have direct vision to target.
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="go">Target gameobject</param>
@@ -114,7 +115,7 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    /// If object dont have direct vision to given game object, keep it on list.
+    /// If object dont have direct vision to given target object, keep it on list.
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="go">Target gameobject</param>
@@ -145,6 +146,7 @@ public static class ComponentRegistry
 
     /// <summary>
     /// Sort list of components from neartest to farthest
+    /// @TODO remove linq
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="point">Target point</param>
@@ -156,6 +158,7 @@ public static class ComponentRegistry
 
     /// <summary>
     /// Sort list of components from farthest to neartest
+    /// @TODO remove linq
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="point">Target point</param>
@@ -163,6 +166,31 @@ public static class ComponentRegistry
     public static List<Component> SortByDistanceInverse(this List<Component> list, Vector3 point)
     {
         return list.OrderByDescending(o => Vector3.Distance(point, o.transform.position)).ToList();
+    }
+
+    /// <summary>
+    /// Get list of components between min and max distance to point.
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="point">Target point</param>
+    /// <param name="min">Min distance</param>
+    /// <param name="max">Max dinstance</param>
+    /// <returns></returns>
+    public static List<Component> Range(this List<Component> list, Vector3 point, float min = 0f, float max = float.MaxValue)
+    {
+        for (int i = list.Count - 1; i >= 0; --i)
+        {
+            Component o = list[i];
+            if (o == null)
+                continue;
+
+            float distance = Vector3.Distance(point, o.transform.position);
+            if (distance >= min && distance <= max)
+                continue;
+
+            list.Remove(o);
+        }
+        return list;
     }
 
     /// <summary>
@@ -207,35 +235,8 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    /// Get list of components between min and max distance to point.
-    /// </summary>
-    /// <param name="list">Extension</param>
-    /// <param name="point">Target point</param>
-    /// <param name="min">Min distance</param>
-    /// <param name="max">Max dinstance</param>
-    /// <returns></returns>
-    public static List<Component> Range(this List<Component> list, Vector3 point, float min = 0f, float max = float.MaxValue)
-    {
-        for (int i = list.Count - 1; i >= 0; --i)
-        {
-            Component o = list[i];
-            if (o == null)
-                continue;
-
-            float distance = Vector3.Distance(point, o.transform.position);
-            if (distance >= min && distance <= max)
-                continue;
-
-            list.Remove(o);
-        }
-        return list;
-    }
-
-
-    /// <summary>
-    /// Compare each component on list to restry and return inversed list of components
+    /// Return inverted list of given component type.
     /// @TODO Optimize this function
-    /// @TODO Remove type parameter
     /// </summary>
     /// <param name="list">Extensions</param>
     /// <param name="type">Component type</param>
