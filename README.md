@@ -7,7 +7,7 @@
 {
 }`
 
-###Or Register/Unregister your components directly using###
+###or register/unregister your components directly using###
 
 `this.RegisterComponent();`
 
