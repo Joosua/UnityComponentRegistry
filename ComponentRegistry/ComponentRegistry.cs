@@ -37,7 +37,7 @@ public static class ComponentRegistry
 
         System.Type type = typeof(T);
         if (!typeToComponentMap.ContainsKey(type))
-            return null;
+            return list;
 
         for (var i = 0; i < typeToComponentMap[type].Count; ++i)
         {
