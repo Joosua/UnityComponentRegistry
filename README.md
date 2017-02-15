@@ -19,31 +19,31 @@
 
 ###For sorting use following component list extension methods:###
 
-Raycast: 
+**Raycast:**
 `this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
 
-RaycastInverse: 
+**RaycastInverse:**
 `this.GetObjectsOfType<Unit>().RaycastInverse(go, layer, 30f);`
 
-SortByDistance: 
+**SortByDistance:**
 `this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f));`
 
-SortByDistanceInverse: 
+**SortByDistanceInverse:**
 `this.GetObjectsOfType<Unit>().SortByDistanceInverse(new Vector3(0f, 0f, 0f));`
 
-First: 
+**First:**
 `this.GetObjectsOfType<Unit>().First(2);`
 
-Last: 
+**Last:**
 `this.GetObjectsOfType<Unit>().Last(2);`
 
-Random: 
+**Random:**
 `this.GetObjectsOfType<Unit>().Random(2);`
 
-Range: 
+**Range:**
 `this.GetObjectsOfType<Unit>().Range(new Vector3(0f, 0f, 0f), 5f 10f);`
 
-Inverse: 
+**Inverse:**
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
 
 ###It's also possible to link them together###
