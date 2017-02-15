@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq; // @TODO remove!!!
 
 public static class ComponentRegistry
 {
@@ -146,26 +145,26 @@ public static class ComponentRegistry
 
     /// <summary>
     /// Sort list of components from neartest to farthest
-    /// @TODO remove linq
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="point">Target point</param>
     /// <returns>Sorted list</returns>
     public static List<Component> SortByDistance(this List<Component> list, Vector3 point)
     {
-        return list.OrderBy(o => Vector3.Distance(point, o.transform.position)).ToList();
+        list.Sort((x, y) => (x.transform.position - point).sqrMagnitude.CompareTo((y.transform.position - point).sqrMagnitude));
+        return list;
     }
 
     /// <summary>
     /// Sort list of components from farthest to neartest
-    /// @TODO remove linq
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="point">Target point</param>
     /// <returns>Sorted list</returns>
     public static List<Component> SortByDistanceInverse(this List<Component> list, Vector3 point)
     {
-        return list.OrderByDescending(o => Vector3.Distance(point, o.transform.position)).ToList();
+        list.Sort((x, y) => (y.transform.position - point).sqrMagnitude.CompareTo((x.transform.position - point).sqrMagnitude));
+        return list;
     }
 
     /// <summary>
