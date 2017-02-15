@@ -13,11 +13,11 @@
 
 `this.UnregisterComponent();`
 
-###To get access to your coponent###
+###To get access to given coponent types###
 
 `List<Component> component = this.GetObjectsOfType<Unit>()`
 
-###For sorting you can use following functions:###
+###For sorting use following extension methods:###
 
 Raycast: 
 `this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
