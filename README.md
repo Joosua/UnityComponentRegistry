@@ -17,7 +17,7 @@
 
 `List<Component> components = this.GetObjectsOfType<Unit>()`
 
-###For sorting use following extension methods:###
+###For sorting use following component list extension methods:###
 
 Raycast: 
 `this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
