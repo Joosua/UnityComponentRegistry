@@ -1,5 +1,5 @@
 # UnityComponentRegistry #
-## Examples ##
+##How to use##
 
 ###Inherit from IComponentRegistry object###
 
