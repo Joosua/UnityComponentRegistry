@@ -15,7 +15,11 @@
 
 ###To get access to given coponent types###
 
-`List<Component> components = this.GetObjectsOfType<Unit>()`
+`List<Component> components = this.GetComponentsOfType<Unit>()`
+
+###And for non alloc you can use###
+
+`this.GetComponentsOfTypeNonAlloc<Unit>(ref list)`
 
 ###For sorting use following component list extension methods:###
 
@@ -24,6 +28,9 @@
 
 **RaycastInverse:**
 `this.GetObjectsOfType<Unit>().RaycastInverse(go, layer, 30f);`
+
+**RayHit:**
+`Component c = this.GetObjectsOfType<Unit>().RayHit(ray, layer, 30f);`
 
 **SortByDistance:**
 `this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f));`
