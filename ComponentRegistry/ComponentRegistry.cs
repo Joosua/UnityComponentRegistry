@@ -28,13 +28,12 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">Component type</typeparam>
     /// <param name="comp">Extension</param>
-    /// <param name="list">List to store components. Can be null.</param>
     /// <param name="duplicates">Enable duplicating items in list</param>
+    /// <param name="list">List to store components. Can be null.</param>
     /// <returns>List of found components</returns>
     public static List<Component> GetComponentsOfType<T>(
         this Component comp,
-        List<Component> list = null,
-        bool duplicates = false) where T : Component
+        List<Component> list = null) where T : Component
     {
         if (list == null)
             list = new List<Component>();
@@ -47,10 +46,7 @@ public static class ComponentRegistry
         while (iter.MoveNext())
         {
             Component o = iter.Current;
-            if (duplicates)
-                list.Add(o);
-            else if (!list.Contains(o))
-                list.Add(o);
+            list.Add(o);
         }
         return list;
     }
@@ -60,13 +56,12 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="comp">Extension</param>
-    /// <param name="list">Reference to list</param>
     /// <param name="duplicates">Enable duplicating items in list</param>
+    /// <param name="list">Reference to list</param>
     /// <returns>List of found components</returns>
     public static List<Component> GetComponentsOfTypeNonAlloc<T>(
         this Component comp,
-        ref List<Component> list,
-        bool duplicates = false) where T : Component
+        ref List<Component> list) where T : Component
     {
         System.Type type = typeof(T);
         if (!typeToComponentMap.ContainsKey(type))
@@ -76,10 +71,7 @@ public static class ComponentRegistry
         while (iter.MoveNext())
         {
             Component o = iter.Current;
-            if (duplicates)
-                list.Add(o);
-            else if (!list.Contains(o))
-                list.Add(o);
+            list.Add(o);
         }
         return list;
     }
@@ -193,14 +185,14 @@ public static class ComponentRegistry
         RaycastHit hit;
         if (Physics.Raycast(ray, out hit, distance, layer))
         {
-            for (int i = list.Count - 1; i >= 0; --i)
+            List<Component>.Enumerator iter = list.GetEnumerator();
+            while(iter.MoveNext())
             {
-                Component c = list[i];
-                if (c.gameObject == hit.transform.gameObject)
+                Component c = iter.Current;
+                if (c.gameObject == hit.collider.gameObject)
                     return c;
             }
         }
-        
         return null;
     }
 
