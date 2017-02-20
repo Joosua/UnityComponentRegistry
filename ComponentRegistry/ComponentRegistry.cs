@@ -301,13 +301,13 @@ public static class ComponentRegistry
     /// <returns></returns>
     public static List<Component> Inverse(this List<Component> list, System.Type type)
     {
-        List<Component> fullList = GetObjectsOfType(type);
         bufferList.Clear();
 
         Component c1 = null;
-        for (var i = 0; i < fullList.Count; ++i)
+        List<Component>.Enumerator fullListIter = GetObjectsOfType(type).GetEnumerator();
+        while(fullListIter.MoveNext())
         {
-            c1 = fullList[i];
+            c1 = fullListIter.Current;
             if (!list.Contains(c1))
                 bufferList.Add(c1);
         }
