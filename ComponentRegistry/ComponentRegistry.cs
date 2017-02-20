@@ -24,13 +24,17 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    /// Get components of given generic type. If list reference is not passed, new component list is instantiated.
+    /// Get components of given generic type. if no list is provided new lint instance is allocated.
     /// </summary>
     /// <typeparam name="T">Component type</typeparam>
-    /// <param name="comp"></param>
-    /// <param name="list">Reference list to store components. Can be null.</param>
-    /// <returns></returns>
-    public static List<Component> GetObjectsOfType<T>(this Component comp, List<Component> list = null) where T : Component
+    /// <param name="comp">Extension</param>
+    /// <param name="list">List to store components. Can be null.</param>
+    /// <param name="duplicates">Enable duplicating items in list</param>
+    /// <returns>List of found components</returns>
+    public static List<Component> GetComponentsOfType<T>(
+        this Component comp,
+        List<Component> list = null,
+        bool duplicates = false) where T : Component
     {
         if (list == null)
             list = new List<Component>();
@@ -39,10 +43,42 @@ public static class ComponentRegistry
         if (!typeToComponentMap.ContainsKey(type))
             return list;
 
-        for (var i = 0; i < typeToComponentMap[type].Count; ++i)
+        List<Component>.Enumerator iter = typeToComponentMap[type].GetEnumerator();
+        while (iter.MoveNext())
         {
-            Component o = typeToComponentMap[type][i];
-            if (!list.Contains(o))
+            Component o = iter.Current;
+            if (duplicates)
+                list.Add(o);
+            else if (!list.Contains(o))
+                list.Add(o);
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Get components of given generic type. Found components are added to supplied list.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="comp">Extension</param>
+    /// <param name="list">Reference to list</param>
+    /// <param name="duplicates">Enable duplicating items in list</param>
+    /// <returns>List of found components</returns>
+    public static List<Component> GetComponentsOfTypeNonAlloc<T>(
+        this Component comp,
+        ref List<Component> list,
+        bool duplicates = false) where T : Component
+    {
+        System.Type type = typeof(T);
+        if (!typeToComponentMap.ContainsKey(type))
+            return list;
+
+        List<Component>.Enumerator iter = typeToComponentMap[type].GetEnumerator();
+        while (iter.MoveNext())
+        {
+            Component o = iter.Current;
+            if (duplicates)
+                list.Add(o);
+            else if (!list.Contains(o))
                 list.Add(o);
         }
         return list;
@@ -125,6 +161,7 @@ public static class ComponentRegistry
     {
         RaycastHit hit;
         Ray ray = new Ray(go.transform.position, Vector3.forward);
+
         for (int i = list.Count - 1; i >= 0; --i)
         {
             Component o = list[i];
@@ -141,6 +178,30 @@ public static class ComponentRegistry
             }
         }
         return list;
+    }
+
+    /// <summary>
+    /// Check if ray hits any of the components.
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="ray">Target ray</param>
+    /// <param name="layer">Layer mask</param>
+    /// <param name="distance">Max raycast distance</param>
+    /// <returns>Hitted compoennt or null</returns>
+    public static Component RayHit(this List<Component> list, Ray ray, LayerMask layer, float distance = float.MaxValue)
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, distance, layer))
+        {
+            for (int i = list.Count - 1; i >= 0; --i)
+            {
+                Component c = list[i];
+                if (c.gameObject == hit.transform.gameObject)
+                    return c;
+            }
+        }
+        
+        return null;
     }
 
     /// <summary>
@@ -177,17 +238,23 @@ public static class ComponentRegistry
     /// <returns></returns>
     public static List<Component> Range(this List<Component> list, Vector3 point, float min = 0f, float max = float.MaxValue)
     {
+        Component o = null;
+        float distance = 0f;
+        float minSqr = min * min;
+        float maxSqr = max * max;
         for (int i = list.Count - 1; i >= 0; --i)
         {
-            Component o = list[i];
+            o = list[i];
             if (o == null)
                 continue;
 
-            float distance = Vector3.Distance(point, o.transform.position);
-            if (distance >= min && distance <= max)
+            //float distance = Vector3.Distance(point, o.transform.position);
+            distance = (point - o.transform.position).sqrMagnitude;
+            if (distance >= minSqr && distance <= maxSqr)
                 continue;
 
             list.Remove(o);
+            o = null;
         }
         return list;
     }
