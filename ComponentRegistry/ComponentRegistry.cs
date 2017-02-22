@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public static class ComponentRegistry
 {
     #region STATIC MAPPING
+
     /// <summary>
     /// Temporary list used for component sorting purposes
     /// </summary>
@@ -146,10 +147,10 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="go">Target gameobject</param>
-    /// <param name="layer">Layer mask</param>
+    /// <param name="layers">Layer mask</param>
     /// <param name="distance">Max ray distance</param>
     /// <returns></returns>
-    public static List<Component> RaycastInverse(this List<Component> list, GameObject go, LayerMask layer, float distance = float.MaxValue)
+    public static List<Component> RaycastInverse(this List<Component> list, GameObject go, LayerMask layers, float distance = float.MaxValue)
     {
         RaycastHit hit;
         Ray ray = new Ray(go.transform.position, Vector3.forward);
@@ -162,7 +163,7 @@ public static class ComponentRegistry
                 ray.origin = o.transform.position;
                 ray.direction = (go.transform.position - o.transform.position).normalized;
 
-                if (Physics.Raycast(ray, out hit, distance, layer))
+                if (Physics.Raycast(ray, out hit, distance, layers))
                 {
                     if (hit.collider.gameObject == go.gameObject)
                         list.Remove(o);
@@ -177,13 +178,13 @@ public static class ComponentRegistry
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="ray">Target ray</param>
-    /// <param name="layer">Layer mask</param>
+    /// <param name="layers">Layer mask</param>
     /// <param name="distance">Max raycast distance</param>
     /// <returns>Hitted compoennt or null</returns>
-    public static Component RayHit(this List<Component> list, Ray ray, LayerMask layer, float distance = float.MaxValue)
+    public static Component RayHit(this List<Component> list, Ray ray, LayerMask layers, float distance = float.MaxValue)
     {
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, distance, layer))
+        if (Physics.Raycast(ray, out hit, distance, layers))
         {
             List<Component>.Enumerator iter = list.GetEnumerator();
             while(iter.MoveNext())
@@ -310,6 +311,97 @@ public static class ComponentRegistry
             c1 = fullListIter.Current;
             if (!list.Contains(c1))
                 bufferList.Add(c1);
+        }
+
+        list.Clear();
+        for (var i = 0; i < bufferList.Count; ++i)
+        {
+            Component c = bufferList[i];
+            list.Add(c);
+        }
+
+        return list;
+    }
+
+    /// <summary>
+    /// Return list of components inside the collider object. Currently BoxCollider, SphereCollider and CapsuleColliders are supported.
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="buffer">Buffer of colliders to use in overlap check</param>
+    /// <param name="collider">Target collider</param>
+    /// <param name="layers">layers</param>
+    /// <returns>List of components inside the collider</returns>
+    public static List<Component> InCollider(this List<Component> list, ref Collider[] buffer, Collider collider, LayerMask layers)
+    {
+        int colliderCount = 0;
+        if (collider is BoxCollider)
+        {
+            BoxCollider box = collider as BoxCollider;
+            Vector3 bounds = box.bounds.extents;
+            bounds.Scale(box.transform.localScale);
+            colliderCount = Physics.OverlapBoxNonAlloc(collider.transform.TransformPoint(box.center), box.bounds.extents, buffer, collider.transform.rotation, layers);
+        }
+        else if (collider is SphereCollider)
+        {
+            SphereCollider sphere = collider as SphereCollider;
+            Vector3 localScale = sphere.transform.localScale;
+            float maxScale = Mathf.Max(localScale.x, Mathf.Max(localScale.y, localScale.z));
+            colliderCount = Physics.OverlapSphereNonAlloc(collider.transform.TransformPoint(sphere.center), sphere.radius * maxScale, buffer, layers);
+        }
+        else if (collider is CapsuleCollider) // @TODO optimize this
+        {
+            CapsuleCollider capsule = collider as CapsuleCollider;
+            Vector3 c = collider.transform.TransformPoint(capsule.center);
+            Vector3 offset = Vector3.zero;
+            float maxScale = 1f;
+
+            if (capsule.direction == 0) // X-axis
+            {
+                offset = (capsule.transform.localRotation * Vector3.right) * (capsule.height * capsule.transform.localScale.x * 0.5f);
+                maxScale = Mathf.Max(capsule.transform.localScale.y, capsule.transform.localScale.z);
+            }
+            else if (capsule.direction == 1) // Y-axis
+            {
+                offset = (capsule.transform.localRotation * Vector3.up) * (capsule.height * capsule.transform.localScale.y * 0.5f);
+                maxScale = Mathf.Max(capsule.transform.localScale.x, capsule.transform.localScale.z);
+            }
+            if (capsule.direction == 2) // Z-axis
+            {
+                offset = (capsule.transform.localRotation * Vector3.forward) * (capsule.height * capsule.transform.localScale.z * 0.5f);
+                maxScale = Mathf.Max(capsule.transform.localScale.x, capsule.transform.localScale.y);
+            }
+
+            float totalRadius = capsule.radius * maxScale;
+            Vector3 off = offset.normalized * totalRadius;
+
+            if (offset.sqrMagnitude > off.sqrMagnitude)
+                colliderCount = Physics.OverlapCapsuleNonAlloc(c + offset - off, c - offset + off, totalRadius, buffer, layers);
+            else
+                colliderCount = Physics.OverlapSphereNonAlloc(c, totalRadius, buffer, layers);
+        }
+        else
+        {
+            Debug.LogError("Collider type not supported.");
+            list.Clear();
+            return list;
+        }
+
+        bufferList.Clear();
+        List<Component>.Enumerator listIter = list.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            Component c = listIter.Current;
+
+            for(int i = 0; i < colliderCount; ++i)
+            {
+                Collider col = buffer[i];
+
+                if (col.gameObject == c.gameObject)
+                {
+                    bufferList.Add(c);
+                    break;
+                }
+            }
         }
 
         list.Clear();
