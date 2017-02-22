@@ -54,7 +54,7 @@
 
 `Collider[] colliderArray = new Collider[20];`
 
-`this.GetObjectsOfType<Unit>().InCollider(ref colliderArray, collider, -1);`
+`this.GetObjectsOfType<Unit>().InCollider(ref colliderArray, collider, layer);`
 
 **Inverse:**
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
