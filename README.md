@@ -1,7 +1,9 @@
 # UnityComponentRegistry #
 ##What is it##
-Main focus of this project is to provide simplified way to keep track of registered components in scene
-and sort them in query like fashion. For example you can check if player is within a attack range:
+Main focus of this project is to provide a simplified way to keep track of registered components in scene
+and sort them in query like fashion.
+
+For example Enemy unit can check if the player is within an attack range:
 
 ```
 List<Component> targets = this.GetComponentsOfType<Player>()
