@@ -23,15 +23,6 @@
 
 ###For sorting use following component list extension methods:###
 
-**Raycast:**
-`this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
-
-**RaycastInverse:**
-`this.GetObjectsOfType<Unit>().RaycastInverse(go, layer, 30f);`
-
-**RayHit:**
-`Component c = this.GetObjectsOfType<Unit>().RayHit(ray, layer, 30f);`
-
 **SortByDistance:**
 `this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f));`
 
@@ -49,6 +40,15 @@
 
 **Range:**
 `this.GetObjectsOfType<Unit>().Range(new Vector3(0f, 0f, 0f), 5f 10f);`
+
+**Raycast:**
+`this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
+
+**RaycastInverse:**
+`this.GetObjectsOfType<Unit>().RaycastInverse(go, layer, 30f);`
+
+**RayHit:**
+`Component c = this.GetObjectsOfType<Unit>().RayHit(ray, layer, 30f);`
 
 **OverlapSphere:**
 `this.GetObjectsOfType<Unit>().OverlapSphere(point, radius, layer);`
