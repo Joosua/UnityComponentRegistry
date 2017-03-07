@@ -1,4 +1,18 @@
 # UnityComponentRegistry #
+##What is it##
+Main focus of this project is to provide simplified way to keep track of registered components in scene
+and sort them in query like faction. For example you can check if player is within a attack range:
+
+```
+List<Component> targets = this.GetComponentsOfType<Player>()
+    .Range(transform.position, 0f, 10f)
+	.SortByDistance(transform.position).First();
+for (int i = 0; i < targets.Count; ++i)
+{
+    agent.SetDestination(targets[i].transform.position);
+}
+```
+
 ##How to use##
 
 ###Inherit from IComponentRegistry object###
@@ -64,9 +78,6 @@
 
 **Inverse:**
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
-
-###It's also possible to link them together###
-`List<Component> components = this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f)).RaycastInverse(go, layer, 30f).Random(2);`
 
 Note!
 This code is very immature and experimental.
