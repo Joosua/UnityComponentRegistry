@@ -7,6 +7,11 @@ public static class ComponentRegistry
     #region STATIC MAPPING
 
     /// <summary>
+    /// Buffer used by overlapping test
+    /// </summary>
+    static Collider[] colliderBuffer = new Collider[100];
+
+    /// <summary>
     /// Temporary list used for component sorting purposes
     /// </summary>
     static List<Component> bufferList = new List<Component>();
@@ -16,12 +21,51 @@ public static class ComponentRegistry
     /// </summary>
     static Dictionary<System.Type, List<Component>> typeToComponentMap = new Dictionary<System.Type, List<Component>>();
 
+    static List<Component> ComponentsFromBuffer(this List<Component> list, ref Collider[] buffer, int count)
+    {
+        bufferList.Clear();
+        List<Component>.Enumerator listIter = list.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            Component c = listIter.Current;
+
+            for (int i = 0; i < count; ++i)
+            {
+                Collider col = buffer[i];
+
+                if (col.gameObject == c.gameObject)
+                {
+                    bufferList.Add(c);
+                    break;
+                }
+            }
+        }
+
+        list.Clear();
+        for (var i = 0; i < bufferList.Count; ++i)
+        {
+            Component c = bufferList[i];
+            list.Add(c);
+        }
+
+        return list;
+    }
+
     static List<Component> GetObjectsOfType(System.Type type)
     {
         if (!typeToComponentMap.ContainsKey(type))
             typeToComponentMap[type] = new List<Component>();
 
         return typeToComponentMap[type];
+    }
+
+    /// <summary>
+    /// Resize collider buffer
+    /// </summary>
+    /// <param name="newSize">new buffer capacity</param>
+    public static void ResizeColliderBuffer(int newSize)
+    {
+        colliderBuffer = new Collider[newSize];
     }
 
     /// <summary>
@@ -324,14 +368,80 @@ public static class ComponentRegistry
     }
 
     /// <summary>
+    /// Return list of components inside the Box
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="point">Center point</param>
+    /// <param name="halfExtends">Box dimentions</param>
+    /// <param name="orientation">Box orientation</param>
+    /// <param name="layers">Layers</param>
+    /// <returns>List of components inside the sphere</returns>
+    public static List<Component> OverlapBox(this List<Component> list, Vector3 point, Vector3 halfExtends, Quaternion orientation, LayerMask layers)
+    {
+        int colliderCount = 0;
+        colliderCount = Physics.OverlapBoxNonAlloc(point, halfExtends, colliderBuffer, orientation, layers);
+
+        return ComponentsFromBuffer(list, ref colliderBuffer, colliderCount);
+    }
+
+    /// <summary>
+    /// Return list of components inside the sphere
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="point">Center point</param>
+    /// <param name="radius">radius</param>
+    /// <param name="layers">Layers</param>
+    /// <returns>List of components inside the sphere</returns>
+    public static List<Component> OverlapSphere(this List<Component> list, Vector3 point, float radius, LayerMask layers)
+    {
+        int colliderCount = 0;
+        colliderCount = Physics.OverlapSphereNonAlloc(point, radius, colliderBuffer, layers);
+
+        return ComponentsFromBuffer(list, ref colliderBuffer, colliderCount);
+    }
+
+    /// <summary>
+    /// Return list of components inside the capsule
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="point">Center point</param>
+    /// <param name="radius">Radius</param>
+    /// <param name="height">Height</param>
+    /// <param name="direction">Direction where 0 = x-axis, 1 = y axis and 2 = z axis</param>
+    /// <param name="orientation">Capsule orientation</param>
+    /// <param name="layers">Layers</param>
+    /// <returns>List of components inside the capsule</returns>
+    public static List<Component> OverlapCapsule(this List<Component> list, Vector3 point, float radius, float height, int direction, Quaternion orientation, LayerMask layers)
+    {
+        int colliderCount = 0;
+        Vector3 offset = Vector3.zero;
+
+        if (direction == 0) // X-axis
+            offset = (orientation * Vector3.right) * height * 0.5f;
+        else if (direction == 1) // Y-axis
+            offset = (orientation * Vector3.up) * height * 0.5f;
+        if (direction == 2) // Z-axis
+            offset = (orientation * Vector3.forward) * height * 0.5f;
+        Vector3 off = offset.normalized * radius;
+
+        if (offset.sqrMagnitude > off.sqrMagnitude)
+            colliderCount = Physics.OverlapCapsuleNonAlloc(point + offset - off, point - offset + off, radius, colliderBuffer, layers);
+        else
+            colliderCount = Physics.OverlapSphereNonAlloc(point, radius, colliderBuffer, layers);
+
+        return ComponentsFromBuffer(list, ref colliderBuffer, colliderCount);
+    }
+
+    /// <summary>
     /// Return list of components inside the collider object. Currently BoxCollider, SphereCollider and CapsuleColliders are supported.
+    /// Colliders transform effects on overlap check.
     /// </summary>
     /// <param name="list">Extension</param>
     /// <param name="buffer">Buffer of colliders to use in overlap check</param>
     /// <param name="collider">Target collider</param>
     /// <param name="layers">layers</param>
     /// <returns>List of components inside the collider</returns>
-    public static List<Component> InCollider(this List<Component> list, ref Collider[] buffer, Collider collider, LayerMask layers)
+    public static List<Component> OverlapCollider(this List<Component> list, Collider collider, LayerMask layers)
     {
         int colliderCount = 0;
         if (collider is BoxCollider)
@@ -339,16 +449,16 @@ public static class ComponentRegistry
             BoxCollider box = collider as BoxCollider;
             Vector3 bounds = box.bounds.extents;
             bounds.Scale(box.transform.localScale);
-            colliderCount = Physics.OverlapBoxNonAlloc(collider.transform.TransformPoint(box.center), box.bounds.extents, buffer, collider.transform.rotation, layers);
+            colliderCount = Physics.OverlapBoxNonAlloc(collider.transform.TransformPoint(box.center), box.bounds.extents, colliderBuffer, collider.transform.rotation, layers);
         }
         else if (collider is SphereCollider)
         {
             SphereCollider sphere = collider as SphereCollider;
             Vector3 localScale = sphere.transform.localScale;
             float maxScale = Mathf.Max(localScale.x, Mathf.Max(localScale.y, localScale.z));
-            colliderCount = Physics.OverlapSphereNonAlloc(collider.transform.TransformPoint(sphere.center), sphere.radius * maxScale, buffer, layers);
+            colliderCount = Physics.OverlapSphereNonAlloc(collider.transform.TransformPoint(sphere.center), sphere.radius * maxScale, colliderBuffer, layers);
         }
-        else if (collider is CapsuleCollider) // @TODO optimize this
+        else if (collider is CapsuleCollider)
         {
             CapsuleCollider capsule = collider as CapsuleCollider;
             Vector3 c = collider.transform.TransformPoint(capsule.center);
@@ -375,9 +485,9 @@ public static class ComponentRegistry
             Vector3 off = offset.normalized * totalRadius;
 
             if (offset.sqrMagnitude > off.sqrMagnitude)
-                colliderCount = Physics.OverlapCapsuleNonAlloc(c + offset - off, c - offset + off, totalRadius, buffer, layers);
+                colliderCount = Physics.OverlapCapsuleNonAlloc(c + offset - off, c - offset + off, totalRadius, colliderBuffer, layers);
             else
-                colliderCount = Physics.OverlapSphereNonAlloc(c, totalRadius, buffer, layers);
+                colliderCount = Physics.OverlapSphereNonAlloc(c, totalRadius, colliderBuffer, layers);
         }
         else
         {
@@ -386,32 +496,7 @@ public static class ComponentRegistry
             return list;
         }
 
-        bufferList.Clear();
-        List<Component>.Enumerator listIter = list.GetEnumerator();
-        while (listIter.MoveNext())
-        {
-            Component c = listIter.Current;
-
-            for(int i = 0; i < colliderCount; ++i)
-            {
-                Collider col = buffer[i];
-
-                if (col.gameObject == c.gameObject)
-                {
-                    bufferList.Add(c);
-                    break;
-                }
-            }
-        }
-
-        list.Clear();
-        for (var i = 0; i < bufferList.Count; ++i)
-        {
-            Component c = bufferList[i];
-            list.Add(c);
-        }
-
-        return list;
+        return ComponentsFromBuffer(list, ref colliderBuffer, colliderCount);
     }
 
     #endregion
