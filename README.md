@@ -54,10 +54,10 @@
 `this.GetObjectsOfType<Unit>().OverlapSphere(point, radius, layer);`
 
 **OverlapBox:**
-`this.GetObjectsOfType<Unit>().OverlapSphere(point, halfExtends, orentation, layer);`
+`this.GetObjectsOfType<Unit>().OverlapBox(point, halfExtends, orentation, layer);`
 
 **OverlapCapsule:**
-`this.GetObjectsOfType<Unit>().OverlapSphere(point, radius, height, direction, orientation, layer);`
+`this.GetObjectsOfType<Unit>().OverlapCapsule(point, radius, height, direction, orientation, layer);`
 
 **OverlapCollider:**
 `this.GetObjectsOfType<Unit>().OverlapCollider(collider, layer);`
