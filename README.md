@@ -24,10 +24,10 @@
 ###For sorting use following component list extension methods:###
 
 **SortByDistance:**
-`this.GetObjectsOfType<Unit>().SortByDistance(new Vector3(0f, 0f, 0f));`
+`this.GetObjectsOfType<Unit>().SortByDistance(point);`
 
 **SortByDistanceInverse:**
-`this.GetObjectsOfType<Unit>().SortByDistanceInverse(new Vector3(0f, 0f, 0f));`
+`this.GetObjectsOfType<Unit>().SortByDistanceInverse(point);`
 
 **First:**
 `this.GetObjectsOfType<Unit>().First(2);`
@@ -39,7 +39,7 @@
 `this.GetObjectsOfType<Unit>().Random(2);`
 
 **Range:**
-`this.GetObjectsOfType<Unit>().Range(new Vector3(0f, 0f, 0f), 5f 10f);`
+`this.GetObjectsOfType<Unit>().Range(point, 5f 10f);`
 
 **Raycast:**
 `this.GetObjectsOfType<Unit>().Raycast(go, layer, 30f);`
