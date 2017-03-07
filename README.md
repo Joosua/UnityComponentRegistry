@@ -50,11 +50,17 @@
 **Range:**
 `this.GetObjectsOfType<Unit>().Range(new Vector3(0f, 0f, 0f), 5f 10f);`
 
-**InCollider:**
+**OverlapSphere:**
+`this.GetObjectsOfType<Unit>().OverlapSphere(point, radius, layer);`
 
-`Collider[] colliderArray = new Collider[20];`
+**OverlapBox:**
+`this.GetObjectsOfType<Unit>().OverlapSphere(point, halfExtends, orentation, layer);`
 
-`this.GetObjectsOfType<Unit>().InCollider(ref colliderArray, collider, layer);`
+**OverlapCapsule:**
+`this.GetObjectsOfType<Unit>().OverlapSphere(point, radius, height, direction, orientation, layer);`
+
+**OverlapCollider:**
+`this.GetObjectsOfType<Unit>().OverlapCollider(collider, layer);`
 
 **Inverse:**
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
