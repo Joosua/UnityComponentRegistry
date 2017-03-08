@@ -401,6 +401,36 @@ public static class ComponentRegistry
     }
 
     /// <summary>
+    /// Return list of components inside the view cone
+    /// </summary>
+    /// <param name="list">Extension</param>
+    /// <param name="point">Point</param>
+    /// <param name="dir">Cone normalized direction</param>
+    /// <param name="distance">Max distance</param>
+    /// <param name="angle">Max angle</param>
+    /// <returns>List of components inside the cone</returns>
+    public static List<Component> ViewCone(this List<Component> list, Vector3 point, Vector3 dir, float distance, float angle)
+    {
+        Component c = null;
+        Vector3 diff;
+        float sqrMag = distance * distance;
+
+        for (int i = list.Count - 1; i >= 0; --i)
+        {
+            c = list[i];
+            diff = c.transform.position - point;
+
+            if (diff.sqrMagnitude > sqrMag ||
+                Vector3.Angle(diff, dir) > angle)
+            {
+                list.Remove(c);
+            }
+        }
+
+        return list;
+    }
+
+    /// <summary>
     /// Return list of components inside the capsule
     /// </summary>
     /// <param name="list">Extension</param>
