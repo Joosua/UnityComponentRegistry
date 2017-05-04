@@ -8,7 +8,8 @@ For example Enemy unit can check if the player is within an attack range:
 ```
 List<Component> targets = this.GetComponentsOfType<Player>()
     .Range(transform.position, 0f, 10f)
-	.SortByDistance(transform.position).First();
+    .SortByDistance(transform.position).First();
+
 for (int i = 0; i < targets.Count; ++i)
 {
     agent.SetDestination(targets[i].transform.position);
