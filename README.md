@@ -1,5 +1,5 @@
 # UnityComponentRegistry #
-##What is it##
+## What is it ##
 Main focus of this project is to provide a simplified way to keep track of registered components in scene
 and sort them in query like fashion.
 
@@ -15,29 +15,29 @@ for (int i = 0; i < targets.Count; ++i)
 }
 ```
 
-##How to use##
+## How to use ##
 
-###Inherit from IComponentRegistry object###
+### Inherit from IComponentRegistry object ###
 
 `public class Unit : IComponentRegistry
 {
 }`
 
-###or register/unregister your components directly using###
+### or register/unregister your components directly using ###
 
 `this.RegisterComponent();`
 
 `this.UnregisterComponent();`
 
-###To get access to given coponent types###
+### To get access to given coponent types ###
 
 `List<Component> components = this.GetComponentsOfType<Unit>()`
 
-###And for non alloc you can use###
+### And for non alloc you can use ###
 
 `this.GetComponentsOfTypeNonAlloc<Unit>(ref list)`
 
-###For sorting use following component list extension methods:###
+### For sorting use following component list extension methods: ###
 
 **SortByDistance:**
 `this.GetObjectsOfType<Unit>().SortByDistance(point);`
