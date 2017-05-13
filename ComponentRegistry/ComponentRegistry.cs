@@ -530,12 +530,12 @@ public static class ComponentRegistry
     }
 
     /// <summary>
-    /// Iterate each component of given type and invoke a function callback for each list component.
+    /// Iterate each component of given type and invoke a function callback for each list component. If callback function returns false stop iteraton.
     /// </summary>
     /// <typeparam name="T">Casted component type</typeparam>
     /// <param name="list">Extension</param>
     /// <param name="callback">Callback fucntion</param>
-    /// <returns></returns>
+    /// <returns>List of components</returns>
     public static List<Component> Each<T>(this List<Component> list, System.Func<T, bool> callback) where T : Component
     {
         T comp = null;
@@ -556,7 +556,7 @@ public static class ComponentRegistry
     /// <param name="list">Extension</param>
     /// <param name="callback">Callback fucntion</param>
     /// <param name="count">Return component count</param>
-    /// <returns></returns>
+    /// <returns>List of components</returns>
     public static List<Component> First<T>(this List<Component> list, System.Action<T> callback, int count = 1) where T : Component
     {
         int index = 0;
@@ -583,7 +583,7 @@ public static class ComponentRegistry
     /// <param name="list">Extension</param>
     /// <param name="callback">Callback fucntion</param>
     /// <param name="count">Return component count</param>
-    /// <returns></returns>
+    /// <returns>List of components</returns>
     public static List<Component> Last<T>(this List<Component> list, System.Action<T> callback, int count = 1) where T : Component
     {
         int index = 0;
