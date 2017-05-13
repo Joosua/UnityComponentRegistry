@@ -96,19 +96,13 @@ bool HandleUnit(Unit u)
 **First:**
 ```
 this.GetObjectsOfType<Unit>().SortByDistance(point).First<Unit>(HandleUnit);
-void HandleUnit(Unit u)
-{
-    return true;
-}
+void HandleUnit(Unit u){}
 ```
 
 **Last:**
 ```
 this.GetObjectsOfType<Unit>().SortByDistance(point).Last<Unit>(HandleUnit);
-void HandleUnit(Unit u)
-{
-    return true;
-}
+void HandleUnit(Unit u){}
 ```
 
 Note!
