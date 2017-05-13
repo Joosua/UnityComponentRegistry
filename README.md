@@ -82,5 +82,34 @@ for (int i = 0; i < targets.Count; ++i)
 **Inverse:**
 `this.GetObjectsOfType<Unit>().Inverse(typeof(Unit));`
 
+### Use function callbacks to iterate sorted components: ###
+
+**Each:**
+```
+this.GetObjectsOfType<Unit>().SortByDistance(point).Each<Unit>(HandleUnit);
+bool HandleUnit(Unit u)
+{
+    return true;
+}
+```
+
+**First:**
+```
+this.GetObjectsOfType<Unit>().SortByDistance(point).First<Unit>(HandleUnit);
+void HandleUnit(Unit u)
+{
+    return true;
+}
+```
+
+**Last:**
+```
+this.GetObjectsOfType<Unit>().SortByDistance(point).Last<Unit>(HandleUnit);
+void HandleUnit(Unit u)
+{
+    return true;
+}
+```
+
 Note!
 This code is very immature and experimental.
