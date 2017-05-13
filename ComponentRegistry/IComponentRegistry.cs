@@ -3,7 +3,7 @@ using System.Collections;
 
 public abstract class IComponentRegistry : MonoBehaviour
 {
-    protected virtual void Start()
+    protected virtual void Awake()
     {
         this.RegisterComponent();
     }

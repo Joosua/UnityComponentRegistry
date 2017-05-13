@@ -529,5 +529,84 @@ public static class ComponentRegistry
         return ComponentsFromBuffer(list, ref colliderBuffer, colliderCount);
     }
 
+    /// <summary>
+    /// Iterate each component of given type and invoke a function callback for each list component.
+    /// </summary>
+    /// <typeparam name="T">Casted component type</typeparam>
+    /// <param name="list">Extension</param>
+    /// <param name="callback">Callback fucntion</param>
+    /// <returns></returns>
+    public static List<Component> Each<T>(this List<Component> list, System.Func<T, bool> callback) where T : Component
+    {
+        T comp = null;
+        List<Component>.Enumerator listIter = list.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            comp = listIter.Current as T;
+            if (comp && !callback.Invoke(comp))
+                break;
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Invoke a function callback for first coponent of given type
+    /// </summary>
+    /// <typeparam name="T">Casted component type</typeparam>
+    /// <param name="list">Extension</param>
+    /// <param name="callback">Callback fucntion</param>
+    /// <param name="count">Return component count</param>
+    /// <returns></returns>
+    public static List<Component> First<T>(this List<Component> list, System.Action<T> callback, int count = 1) where T : Component
+    {
+        int index = 0;
+        T comp = null;
+        List<Component>.Enumerator listIter = list.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            comp = listIter.Current as T;
+            if (!comp)
+                continue;
+            callback.Invoke(comp);
+
+            index++;
+            if (index >= count)
+                break;
+        }
+        return list;
+    }
+
+    /// <summary>
+    /// Invoke a function callback for last coponent of given type
+    /// </summary>
+    /// <typeparam name="T">Casted component type</typeparam>
+    /// <param name="list">Extension</param>
+    /// <param name="callback">Callback fucntion</param>
+    /// <param name="count">Return component count</param>
+    /// <returns></returns>
+    public static List<Component> Last<T>(this List<Component> list, System.Action<T> callback, int count = 1) where T : Component
+    {
+        int index = 0;
+
+        bufferList.Clear();
+        bufferList.AddRange(list);
+        bufferList.Reverse();
+
+        T comp = null;
+        List<Component>.Enumerator listIter = bufferList.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            comp = listIter.Current as T;
+            if (!comp)
+                continue;
+            callback.Invoke(comp);
+
+            index++;
+            if (index >= count)
+                break;
+        }
+        return list;
+    }
+
     #endregion
 }
