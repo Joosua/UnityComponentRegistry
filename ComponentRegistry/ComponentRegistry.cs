@@ -161,27 +161,31 @@ public static class ComponentRegistry
     /// <param name="go">Target gameobject</param>
     /// <param name="layer">Layer mask</param>
     /// <param name="distance">Max ray distance</param>
+    /// <param name="checkParents">Check if target gameObject is parent of the ray hit</param>
+    /// <param name="checkChildren">Check if target gameObject is child of the ray hit</param>
     /// <returns></returns>
-    public static List<Component> Raycast(this List<Component> list, GameObject go, LayerMask layer, float distance = float.MaxValue)
+    public static List<Component> Raycast(
+        this List<Component> list, GameObject go, LayerMask layers,
+        float distance = float.MaxValue, bool checkParents = false, bool checkChildren = false)
     {
         RaycastHit hit;
         Ray ray = new Ray(go.transform.position, Vector3.forward);
         for (int i = list.Count - 1; i >= 0; --i)
         {
             Component o = list[i];
-            if (o)
-            {
-                ray.origin = o.transform.position;
-                ray.direction = (go.transform.position - o.transform.position).normalized;
+            if (!o)
+                continue;
 
-                if (Physics.Raycast(ray, out hit, distance, layer))
-                {
-                    if (hit.collider.gameObject != go.gameObject)
-                        list.Remove(o);
-                }
-                else
+            ray.origin = go.transform.position;
+            ray.direction = (o.transform.position - go.transform.position).normalized;
+
+            if (Physics.Raycast(ray, out hit, distance, layers))
+            {
+                if (!CheckGameObject(hit.collider.gameObject, o.gameObject, checkParents, checkChildren))
                     list.Remove(o);
             }
+            else
+                list.Remove(o);
         }
         return list;
     }
@@ -193,25 +197,28 @@ public static class ComponentRegistry
     /// <param name="go">Target gameobject</param>
     /// <param name="layers">Layer mask</param>
     /// <param name="distance">Max ray distance</param>
+    /// <param name="checkParents">Check if target gameObject is parent of the ray hit</param>
+    /// <param name="checkChildren">Check if target gameObject is child of the ray hit</param>
     /// <returns></returns>
-    public static List<Component> RaycastInverse(this List<Component> list, GameObject go, LayerMask layers, float distance = float.MaxValue)
+    public static List<Component> RaycastInverse(
+        this List<Component> list, GameObject go, LayerMask layers,
+        float distance = float.MaxValue, bool checkParents = false, bool checkChildren = false)
     {
         RaycastHit hit;
         Ray ray = new Ray(go.transform.position, Vector3.forward);
-
         for (int i = list.Count - 1; i >= 0; --i)
         {
             Component o = list[i];
-            if (o)
-            {
-                ray.origin = o.transform.position;
-                ray.direction = (go.transform.position - o.transform.position).normalized;
+            if (!o)
+                continue;
 
-                if (Physics.Raycast(ray, out hit, distance, layers))
-                {
-                    if (hit.collider.gameObject == go.gameObject)
-                        list.Remove(o);
-                }
+            ray.origin = go.transform.position;
+            ray.direction = (o.transform.position - go.transform.position).normalized;
+
+            if (Physics.Raycast(ray, out hit, distance, layers))
+            {
+                if (CheckGameObject(hit.collider.gameObject, o.gameObject, checkParents, checkChildren))
+                    list.Remove(o);
             }
         }
         return list;
@@ -530,6 +537,28 @@ public static class ComponentRegistry
     }
 
     /// <summary>
+    /// Cast components to given type and pass them to callback function. Note! Will alloc memory.
+    /// </summary>
+    /// <typeparam name="T">Component Type</typeparam>
+    /// <param name="list">Extension</param>
+    /// <param name="callback">Callback function</param>
+    /// <returns></returns>
+    public static List<Component> Call<T>(this List<Component> list, System.Action<List<T>> callback) where T : Component
+    {
+        var castedList = new List<T>(list.Capacity);
+        List<Component>.Enumerator listIter = list.GetEnumerator();
+        while (listIter.MoveNext())
+        {
+            T v = listIter.Current as T;
+            if (v)
+                castedList.Add(v);
+        }
+        callback.Invoke(castedList);
+
+        return list;
+    }
+
+    /// <summary>
     /// Iterate each component of given type and invoke a function callback for each list component. If callback function returns false stop iteraton.
     /// </summary>
     /// <typeparam name="T">Casted component type</typeparam>
@@ -606,6 +635,32 @@ public static class ComponentRegistry
                 break;
         }
         return list;
+    }
+
+    #endregion
+    #region UTILITY_FUNCTIONS
+
+    static bool CheckGameObject(GameObject target, GameObject find, bool checkParent = false, bool checkChildren = false)
+    {
+        if (target == find)
+            return true;
+
+        if (checkParent)
+        {
+            Transform rootParent = target.transform;
+            Transform lastParent = rootParent;
+            while (rootParent = rootParent.parent)
+            {
+                if (rootParent.gameObject == find)
+                    return true;
+                lastParent = rootParent.parent;
+            }
+        }
+
+        if (checkChildren && find.transform.IsChildOf(target.transform))
+            return true;
+
+        return false;
     }
 
     #endregion
