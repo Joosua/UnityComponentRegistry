@@ -51,6 +51,31 @@ public static class ComponentRegistry
         return list;
     }
 
+    static void RegisterType(Component comp, System.Type type)
+    {
+        if (type == typeof(IComponentRegistry))
+            return;
+
+        if (!typeToComponentMap.ContainsKey(type))
+            typeToComponentMap[type] = new List<Component>();
+
+        List<Component> comps = typeToComponentMap[type];
+
+        if (comps.Contains(comp))
+            return;
+
+        comps.Add(comp);
+    }
+
+    static void UnregisterType(Component comp, System.Type type)
+    {
+        if (type == typeof(IComponentRegistry) || !typeToComponentMap.ContainsKey(type))
+            return;
+
+        List<Component> comps = typeToComponentMap[type];
+        comps.Remove(comp);
+    }
+
     static List<Component> GetObjectsOfType(System.Type type)
     {
         if (!typeToComponentMap.ContainsKey(type))
@@ -73,7 +98,6 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T">Component type</typeparam>
     /// <param name="comp">Extension</param>
-    /// <param name="duplicates">Enable duplicating items in list</param>
     /// <param name="list">List to store components. Can be null.</param>
     /// <returns>List of found components</returns>
     public static List<Component> GetComponentsOfType<T>(
@@ -101,7 +125,6 @@ public static class ComponentRegistry
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="comp">Extension</param>
-    /// <param name="duplicates">Enable duplicating items in list</param>
     /// <param name="list">Reference to list</param>
     /// <returns>List of found components</returns>
     public static List<Component> GetComponentsOfTypeNonAlloc<T>(
@@ -125,30 +148,34 @@ public static class ComponentRegistry
     /// Register this component to static map.
     /// </summary>
     /// <param name="comp"></param>
-    public static void RegisterComponent(this Component comp)
+    public static void RegisterComponent(this Component comp, bool registerBaseTypes = false)
     {
-        if (!typeToComponentMap.ContainsKey(comp.GetType()))
-            typeToComponentMap[comp.GetType()] = new List<Component>();
+        System.Type type = comp.GetType();
+        RegisterType(comp, type);
 
-        List<Component> comps = typeToComponentMap[comp.GetType()];
-
-        if (comps.Contains(comp))
-            return;
-
-        comps.Add(comp);
+        while (registerBaseTypes && type != null)
+        {
+            type = type.BaseType;
+            if (type != null)
+                RegisterType(comp, type);
+        }
     }
 
     /// <summary>
     /// Remove component from static map.
     /// </summary>
     /// <param name="comp"></param>
-    public static void UnregisterComponent(this Component comp)
+    public static void UnregisterComponent(this Component comp, bool registerBaseTypes = false)
     {
-        if (!typeToComponentMap.ContainsKey(comp.GetType()))
-            return;
+        System.Type type = comp.GetType();
+        UnregisterType(comp, type);
 
-        List<Component> comps = typeToComponentMap[comp.GetType()];
-        comps.Remove(comp);
+        while (registerBaseTypes && type != null)
+        {
+            type = type.BaseType;
+            if (type != null)
+                UnregisterType(comp, type);
+        }
     }
     #endregion
     #region COMPONENT LIST EXTENSIONS
